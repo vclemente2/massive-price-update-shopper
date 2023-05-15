@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import './InputFile.css'
 
-const InputFile = () => {
-    const [file, setFile] = useState(null);
+const InputFile = ({ onResponse, onValidResponse }) => {
+    const [file, setFile] = useState();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -12,15 +12,27 @@ const InputFile = () => {
             formData.append('file', file);
 
             try {
-                const response = await fetch('/products/validade', {
+                const response = await fetch('http://localhost:3001/products/validate', {
                     method: 'POST',
                     body: formData
                 });
 
-                console.log(response)
+                const dataResponse = await response.json()
+                onResponse(dataResponse)
+
+                if (dataResponse.errors.every((error) => error.length === 0)) {
+                    onValidResponse(true);
+                } else {
+                    onValidResponse(false);
+                }
+
+
 
             } catch (error) {
-
+                /*
+                    IMPLEMENTAR
+                */
+                console.log(error)
             }
         }
     };
