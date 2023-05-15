@@ -1,0 +1,15 @@
+import joi from 'joi';
+
+const productSchema = joi.object({
+    columnTitle: joi.array()
+        .items(
+            joi.string().valid('product_code', 'new_price').required(),
+            joi.string().valid('product_code', 'new_price').required(),
+        )
+        .length(2)
+        .required(),
+    codes: joi.array().items(joi.number()).min(1).required(),
+    salesPrice: joi.array().items(joi.number()).min(1).required(),
+});
+
+export default productSchema;
