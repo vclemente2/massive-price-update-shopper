@@ -7,7 +7,9 @@ export const validateProducts = async (req, res) => {
     const data = {
         columnTitle: [],
         codes: [],
-        salesPrice: []
+        salesPrice: [],
+        products: [],
+        errors: []
     }
 
     try {
@@ -15,13 +17,13 @@ export const validateProducts = async (req, res) => {
 
         const arrData = fileData.replaceAll('\r', '').split(`\n`);
 
-        data.columnTitle = arrData[0].split(',')
+        data.columnTitle = arrData[0].split(',');
 
         if (
             !data.columnTitle.includes('product_code') ||
             !data.columnTitle.includes('new_price')
         ) {
-            throw new Error('For the update to be possible, the CSV file must contain the fields "product_code" and "new_price"')
+            throw new Error('For the update to be possible, the CSV file must contain the fields "product_code" and "new_price"');
         }
 
         arrData.splice(0, 1);
@@ -29,18 +31,24 @@ export const validateProducts = async (req, res) => {
         arrData.forEach((value) => {
             const arr = value.split(',');
             if (data.columnTitle[0] === 'product_code') {
-                data.codes.push(parseInt(arr[0]))
-                data.salesPrice.push(parseFloat(arr[1]))
+                data.codes.push(parseInt(arr[0]));
+                data.salesPrice.push(parseFloat(arr[1]));
             } else {
-                data.codes.push(parseInt(arr[1]))
-                data.salesPrice.push(parseFloat(arr[0]))
+                data.codes.push(parseInt(arr[1]));
+                data.salesPrice.push(parseFloat(arr[0]));
             }
         })
 
-        const validate = productSchema.validate(data)
-        if (validate.error) throw new Error(validate.error.message)
+        const validate = productSchema.validate(data);
+        if (validate.error) throw new Error(validate.error.message);
 
-        return res.json(retorno)
+        await Promise.all(data.codes.map(async (code) => {
+            const productExists = await connection('products').where({ code }).first();
+            if (!productExists) throw new Error(`No product was found with the code ${code}`)
+            data.products.push(productExists);
+        }))
+
+        return res.json(data);
 
     } catch (error) {
         return res.status(400).json({ message: error.message });
@@ -48,8 +56,6 @@ export const validateProducts = async (req, res) => {
 }
 
 export const updateProducts = async (req, res) => {
-
-
 
     try {
         // const fileData = (await fs.readFile(path)).toString();
@@ -92,4 +98,3 @@ export const updateProducts = async (req, res) => {
         return res.status(400).json({ message: error.message })
     }
 }
-

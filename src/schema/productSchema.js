@@ -10,6 +10,8 @@ const productSchema = joi.object({
         .required(),
     codes: joi.array().items(joi.number()).min(1).required(),
     salesPrice: joi.array().items(joi.number()).min(1).required(),
+    products: joi.array(),
+    errors: joi.array()
 });
 
 export default productSchema;
