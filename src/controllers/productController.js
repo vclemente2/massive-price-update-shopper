@@ -7,7 +7,7 @@ export const validateProducts = async (req, res) => {
     const data = {
         columnTitle: [],
         codes: [],
-        salesPrice: [],
+        newSalesPrice: [],
         products: [],
         errors: []
     }
@@ -32,10 +32,10 @@ export const validateProducts = async (req, res) => {
             const arr = value.split(',');
             if (data.columnTitle[0] === 'product_code') {
                 data.codes.push(parseInt(arr[0]));
-                data.salesPrice.push(parseFloat(arr[1]));
+                data.newSalesPrice.push(parseFloat(arr[1]));
             } else {
                 data.codes.push(parseInt(arr[1]));
-                data.salesPrice.push(parseFloat(arr[0]));
+                data.newSalesPrice.push(parseFloat(arr[0]));
             }
         })
 
@@ -43,10 +43,48 @@ export const validateProducts = async (req, res) => {
         if (validate.error) throw new Error(validate.error.message);
 
         await Promise.all(data.codes.map(async (code) => {
-            const productExists = await connection('products').where({ code }).first();
-            if (!productExists) throw new Error(`No product was found with the code ${code}`)
+            const productExists = await connection.from('products').leftJoin('packs', 'products.code', 'packs.pack_id').where('products.code', code);
+            if (!productExists.length) throw new Error(`No product was found with the code ${code}`)
             data.products.push(productExists);
         }))
+
+        for (let i = 0; i < data.products.length; i++) {
+            const product = data.products[i][0]
+            const newPrice = data.newSalesPrice[i]
+
+            data.errors.push([])
+            if (product.cost_price > newPrice) data.errors[i].push('Não é permitido que o produto esteja com valor abaixo do preço de custo')
+
+            if (
+                newPrice < product.sales_price * 0.9 ||
+                newPrice > product.sales_price * 1.1
+            ) data.errors[i].push('O novo valor do produto não pode variar mais do que 10% em relação ao valor atual')
+
+            if (product.product_id) {
+
+                for (let y = 0; y < data.products[i].length; y++) {
+                    const productInPack = data.products[i][y].product_id
+                    if (!data.codes.includes(productInPack)) {
+                        data.errors[i].push(`Todos os itens vinculados a um pack pricisam estar listados no arquivo de atualização de preços`)
+                    }
+                }
+            }
+            /*
+                Regras:
+                - O time Financeiro, preocupado com o faturamento, solicitou que o sistema impeça que o 
+                preço de venda dos produtos fique abaixo do custo deles;
+                3- O time de Marketing, preocupado com o impacto de reajustes nos clientes, solicitou que o 
+                sistema impeça qualquer reajuste maior ou menor do que 10% do preço atual do produto
+                4- Alguns produtos são vendidos em pacotes, ou seja, um produto que composto por um ou 
+                mais produtos em quantidades diferentes. 
+                Estabeleceu-se a regra que, ao reajustar o preço de um pacote, o mesmo arquivo deve 
+                conter os reajustes dos preços dos componentes do pacote de modo que o preço final da 
+                soma dos componentes seja igual ao preço do pacote.
+ 
+            */
+
+
+        }
 
         return res.json(data);
 

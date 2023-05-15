@@ -9,7 +9,7 @@ const productSchema = joi.object({
         .length(2)
         .required(),
     codes: joi.array().items(joi.number()).min(1).required(),
-    salesPrice: joi.array().items(joi.number()).min(1).required(),
+    newSalesPrice: joi.array().items(joi.number()).min(1).required(),
     products: joi.array(),
     errors: joi.array()
 });
