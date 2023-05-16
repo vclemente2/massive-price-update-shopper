@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import './InputFile.css'
+import Popup from '../Popup';
 
 const InputFile = ({ onResponse, onValidResponse }) => {
     const [file, setFile] = useState();
+    const [errorMessage, setErrorMessage] = useState('');
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -14,31 +15,31 @@ const InputFile = ({ onResponse, onValidResponse }) => {
             try {
                 const response = await fetch('http://localhost:3001/products/validate', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
                 });
 
-                const dataResponse = await response.json()
-                onResponse(dataResponse)
+                const dataResponse = await response.json();
+                console.log(dataResponse)
+                onResponse(dataResponse);
 
                 if (dataResponse.errors.every((error) => error.length === 0)) {
                     onValidResponse(true);
                 } else {
                     onValidResponse(false);
                 }
-
-
-
             } catch (error) {
-                /*
-                    IMPLEMENTAR
-                */
-                console.log(error)
+                setErrorMessage('Ocorreu um erro ao processar a solicitação.');
+                console.log(error);
             }
         }
     };
 
     const handleFileChange = (event) => {
         setFile(event.target.files[0]);
+    };
+
+    const closeErrorMessage = () => {
+        setErrorMessage('');
     };
 
     return (
@@ -51,8 +52,17 @@ const InputFile = ({ onResponse, onValidResponse }) => {
                     <input type="submit" value="VALIDAR" />
                 </fieldset>
             </form>
+
+
+            {errorMessage && (
+                <Popup onClose={closeErrorMessage}>
+                    <p>{errorMessage}</p>
+                    <button onClick={() => window.location.reload()}>OK</button>
+                </Popup>
+            )}
+
         </div>
     );
-}
+};
 
-export default InputFile
+export default InputFile;

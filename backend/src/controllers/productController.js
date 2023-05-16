@@ -68,6 +68,7 @@ export const validateProducts = async (req, res) => {
                         data.errors[i].push(`Todos os itens vinculados a um pack pricisam estar listados no arquivo de atualização de preços`)
                     }
                 }
+
             }
             /*
                 Regras:
@@ -94,43 +95,32 @@ export const validateProducts = async (req, res) => {
 }
 
 export const updateProducts = async (req, res) => {
+    const data = req.body
 
     try {
-        // const fileData = (await fs.readFile(path)).toString();
 
-        // const arrData = fileData.replaceAll('\r', '').split(`\n`);
+        const arrQuery = []
+        for (let i = 0; i < data.products.length; i++) {
+            const code = data.products[i][0].code;
+            const newSalesPrice = data.newSalesPrice[i];
 
-        // const set = arrData[0];
+            const query = `WHEN ${code} THEN ${newSalesPrice}`
 
-        // arrData.splice(0, 1);
+            arrQuery.push(query)
+        }
 
-        // const codes = [];
-        // const values = (arrData.map((value) => {
-        //     const arr = value.split(',');
-        //     const code = arr[0];
-        //     codes.push(code)
-        //     const salesPrice = arr[1];
-        //     return `WHEN ${code} THEN ${salesPrice}`
-        // })).join("\n");
-
-        const updatedProducts = await connection('products')
-            .whereIn('code', codes)
+        await connection('products')
+            .whereIn('code', data.codes)
             .update({
                 sales_price: connection.raw(`
                  CASE code
-                     ${values}
+                     ${arrQuery.join('\n')}
                      ELSE sales_price
                  END
                 `)
             })
 
-        // if (!updatedProducts) return res.status(404).json({ message: 'No products were found for the codes entered' })
-
-        // const packs = await connection('packs')
-        //     .select(['pack_id', 'qty'])
-        //     .whereIn('product_id', codes)
-
-        return res.json(packs)
+        return res.sendStatus(204)
     } catch (error) {
         console.log(error)
         return res.status(400).json({ message: error.message })

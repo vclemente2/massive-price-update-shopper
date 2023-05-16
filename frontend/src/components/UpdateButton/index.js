@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Popup from '../Popup';
 
 const UpdateButton = ({ data }) => {
     const [success, setSuccess] = useState(false);
@@ -8,7 +9,7 @@ const UpdateButton = ({ data }) => {
         try {
 
             const response = await fetch('http://localhost:3001/products/update', {
-                method: 'POST',
+                method: 'PUT',
                 body: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json'
@@ -25,7 +26,7 @@ const UpdateButton = ({ data }) => {
         }
     };
 
-    const handleOk = () => {
+    const handlePopupClose = () => {
         setSuccess(false);
         setError(false);
         window.location.reload();
@@ -35,15 +36,15 @@ const UpdateButton = ({ data }) => {
         <div>
             {success && (
                 <div>
-                    <p>Atualização bem sucedida!</p>
-                    <button onClick={handleOk}>Ok</button>
+                    <div className="overlay" />
+                    <Popup message="Atualização bem sucedida!" onClose={handlePopupClose} />
                 </div>
             )}
 
             {error && (
                 <div>
-                    <p>Erro ao atualizar.</p>
-                    <button onClick={handleOk}>Ok</button>
+                    <div className="overlay" />
+                    <Popup message="Erro ao atualizar." onClose={handlePopupClose} />
                 </div>
             )}
 
