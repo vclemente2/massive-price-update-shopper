@@ -13,7 +13,7 @@ export const validateProducts = async (req, res) => {
     }
 
     try {
-        const fileData = (await fs.readFile(path)).toString();
+        const fileData = ((await fs.readFile(path)).toString()).trim();
 
         const arrData = fileData.replaceAll('\r', '').split(`\n`);
 

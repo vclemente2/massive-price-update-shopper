@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Popup from '../Popup';
+import './InputFile.css';
 
 const InputFile = ({ onResponse, onValidResponse }) => {
     const [file, setFile] = useState();
@@ -19,7 +20,7 @@ const InputFile = ({ onResponse, onValidResponse }) => {
                 });
 
                 const dataResponse = await response.json();
-                console.log(dataResponse)
+
                 onResponse(dataResponse);
 
                 if (dataResponse.errors.every((error) => error.length === 0)) {
@@ -43,24 +44,22 @@ const InputFile = ({ onResponse, onValidResponse }) => {
     };
 
     return (
-        <div className="inputfile">
+        <div className='inputfile'>
             <form onSubmit={handleSubmit}>
                 <h1>Atualizador de Preços</h1>
                 <fieldset>
                     <legend>Carregar Arquivo (extensão .csv)</legend>
-                    <input type="file" accept=".csv" required onChange={handleFileChange} />
-                    <input type="submit" value="VALIDAR" />
+                    <input type='file' accept='.csv' required onChange={handleFileChange} />
+                    <input type='submit' value='VALIDAR' />
                 </fieldset>
             </form>
 
-
             {errorMessage && (
-                <Popup onClose={closeErrorMessage}>
+                <Popup onClose={closeErrorMessage} className='popup'>
                     <p>{errorMessage}</p>
                     <button onClick={() => window.location.reload()}>OK</button>
                 </Popup>
             )}
-
         </div>
     );
 };

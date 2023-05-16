@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Popup from '../Popup';
+import './UpdateButton.css';
 
 const UpdateButton = ({ data }) => {
     const [success, setSuccess] = useState(false);
@@ -7,7 +8,6 @@ const UpdateButton = ({ data }) => {
 
     const handleUpdate = async () => {
         try {
-
             const response = await fetch('http://localhost:3001/products/update', {
                 method: 'PUT',
                 body: JSON.stringify(data),
@@ -33,7 +33,7 @@ const UpdateButton = ({ data }) => {
     };
 
     return (
-        <div>
+        <div className="update-button">
             {success && (
                 <div>
                     <div className="overlay" />
@@ -53,4 +53,4 @@ const UpdateButton = ({ data }) => {
     );
 };
 
-export default UpdateButton
+export default UpdateButton;
