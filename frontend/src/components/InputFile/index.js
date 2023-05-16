@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Popup from '../Popup';
 import './InputFile.css';
 
 const InputFile = ({ onResponse, onValidResponse }) => {
     const [file, setFile] = useState();
     const [errorMessage, setErrorMessage] = useState('');
+    const inputFileRef = useRef(null);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -33,6 +34,8 @@ const InputFile = ({ onResponse, onValidResponse }) => {
                 console.log(error);
             }
         }
+
+        inputFileRef.current.value = null;
     };
 
     const handleFileChange = (event) => {
@@ -44,18 +47,24 @@ const InputFile = ({ onResponse, onValidResponse }) => {
     };
 
     return (
-        <div className='inputfile'>
+        <div className="inputfile">
             <form onSubmit={handleSubmit}>
                 <h1>Atualizador de Preços</h1>
                 <fieldset>
                     <legend>Carregar Arquivo (extensão .csv)</legend>
-                    <input type='file' accept='.csv' required onChange={handleFileChange} />
-                    <input type='submit' value='VALIDAR' />
+                    <input
+                        type="file"
+                        accept=".csv"
+                        required
+                        onChange={handleFileChange}
+                        ref={inputFileRef}
+                    />
+                    <input type="submit" value="VALIDAR" />
                 </fieldset>
             </form>
 
             {errorMessage && (
-                <Popup onClose={closeErrorMessage} className='popup'>
+                <Popup onClose={closeErrorMessage} className="popup">
                     <p>{errorMessage}</p>
                     <button onClick={() => window.location.reload()}>OK</button>
                 </Popup>

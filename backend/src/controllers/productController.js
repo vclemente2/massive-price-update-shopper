@@ -70,24 +70,9 @@ export const validateProducts = async (req, res) => {
                 }
 
             }
-            /*
-                Regras:
-                - O time Financeiro, preocupado com o faturamento, solicitou que o sistema impeça que o 
-                preço de venda dos produtos fique abaixo do custo deles;
-                3- O time de Marketing, preocupado com o impacto de reajustes nos clientes, solicitou que o 
-                sistema impeça qualquer reajuste maior ou menor do que 10% do preço atual do produto
-                4- Alguns produtos são vendidos em pacotes, ou seja, um produto que composto por um ou 
-                mais produtos em quantidades diferentes. 
-                Estabeleceu-se a regra que, ao reajustar o preço de um pacote, o mesmo arquivo deve 
-                conter os reajustes dos preços dos componentes do pacote de modo que o preço final da 
-                soma dos componentes seja igual ao preço do pacote.
- 
-            */
-
-
         }
 
-        return res.json(data);
+        return res.status(201).json(data);
 
     } catch (error) {
         return res.status(400).json({ message: error.message });
@@ -109,7 +94,7 @@ export const updateProducts = async (req, res) => {
             arrQuery.push(query)
         }
 
-        await connection('products')
+        const updatedProducts = await connection('products')
             .whereIn('code', data.codes)
             .update({
                 sales_price: connection.raw(`
@@ -119,6 +104,8 @@ export const updateProducts = async (req, res) => {
                  END
                 `)
             })
+
+        if (!updatedProducts) return res.status(500).json({ message: 'Internal server error.' })
 
         return res.sendStatus(204)
     } catch (error) {
